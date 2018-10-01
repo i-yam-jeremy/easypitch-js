@@ -1,2 +1,2 @@
-# pitchboard
-A virtual keyboard focused on being able to efficiently play notes
+# EasyPitch.js
+A JavaScript library for easily playing notes
