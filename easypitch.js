@@ -1,28 +1,62 @@
-const PitchBoard = (() => {
+const EasyPitch = (() => {
 
-	let keysDown = {};
-	window.AudioContext = window.AudioContext||window.webkitAudioContext;
+	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	let context = new AudioContext();
 
 	function lognormal(x) {
 		return 1/Math.sqrt(2*Math.PI) * Math.pow(Math.E, -1/2*Math.pow(Math.log(x), 2));
 	}
 
-	function playFreq(freq, time) {
-		let overtones = [1, 1/2, 0, 0, 1/4];
-		let overtonesSum = overtones.reduce((a, b) => a+b);
+	class Instrument {
+		constructor(waveformFunc) {
+			this.waveformFunc = waveformFunc;
+		}
+
+		playNote(note, bpm, callback) {
+			let secondsPerWholeNote = 60 / bpm;
+			let seconds = secondsPerWholeNote * note.fraction;
+			playNote(this.waveformFunc, note.name, note.octave, seconds);
+			setTimeout(callback, 1000*seconds);
+		}
+
+		playNotes(notes, bpm, callback) {
+			let thisInstrument = this;
+			let i = 0;
+			function nextNote() {
+				if (i < notes.length) {
+					thisInstrument.playNote(notes[i++], bpm, nextNote);
+				}
+				else {
+					callback();
+				}
+			};
+			nextNote();	
+		}
+	}
+
+	class SimpleInstrument extends Instrument {
+		constructor(overtones) {
+			let overtoneSum = overtones.reduce((a, b) => a+b);
+			super((t, freq) => {
+				let sample = 0;
+				for (let i = 0; i < overtones.length; i++) {
+					let overtoneFreq = freq*(i+1);
+					let wave = Math.sin(2*Math.PI*overtoneFreq*t);
+					let amplitude = overtones[i] * lognormal(50*t);
+					sample += amplitude*wave;
+				}
+				return sample / overtoneSum;
+			});
+		}
+	}
+
+	function playFreq(waveformFunc, freq, time) {
 		let source = context.createBufferSource(); // creates a sound source
 		let buffer = context.createBuffer(2, context.sampleRate*time, context.sampleRate);
 		for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
 			var nowBuffering = buffer.getChannelData(channel);
 			for (let i = 0; i < nowBuffering.length; i++) {
-				nowBuffering[i] = 0;
-				for (let j = 0; j < overtones.length; j++) {
-					let overtoneFreq = freq*(j+1);
-					let wave = Math.sin(2*Math.PI*overtoneFreq*i/context.sampleRate);
-					let amplitude = lognormal(50*i/context.sampleRate);
-					nowBuffering[i] += (overtones[j]/overtonesSum)*amplitude*wave;
-				}
+				nowBuffering[i] = waveformFunc(i/context.sampleRate, freq);
 			}
 		}
 		source.buffer = buffer;                    // tell the source which sound to play
@@ -53,24 +87,17 @@ const PitchBoard = (() => {
 		"B": 7902.13
 	};
 
-	function playNote(noteName, noteOctave, time) {
+	function playNote(waveformFunc, noteName, noteOctave, time) {
 		let octaveScale = Math.pow(2, noteOctave - 8);
 		let freq = octaveScale*noteFreqs[noteName];
-		playFreq(freq, time);
+		playFreq(waveformFunc, freq, time);
 	}
 
 	class Note {
-		constructor(noteName, noteOctave, fraction) { // fraction is 1, 1/2, 1/4, 1/8, etc.
-			this.noteName = noteName;
-			this.noteOctave = noteOctave;
+		constructor(name, octave, fraction) { // fraction is 1, 1/2, 1/4, 1/8, etc.
+			this.name = name;
+			this.octave = octave;
 			this.fraction = fraction;
-		}
-
-		play(bpm, callback) {
-			let secondsPerWholeNote = 60 / bpm;
-			let seconds = secondsPerWholeNote * this.fraction;
-			playNote(this.noteName, this.noteOctave, seconds);
-			setTimeout(callback, 1000*seconds);
 		}
 	}
 
@@ -85,7 +112,8 @@ const PitchBoard = (() => {
 	}
 
 	function init() {
-		playNotes([
+		let inst = new SimpleInstrument([1, 0, 0, 1/4]);
+		inst.playNotes([
 			new Note("A", 4, 1/4),
 			new Note("A", -10, 1/4),
 			new Note("A", -10, 1/2),
@@ -125,7 +153,7 @@ const PitchBoard = (() => {
 			new Note("A", -10, 1/2),
 			new Note("D", 4, 1),
 		],
-		200);
+		200, () => { console.log("Done"); });
 	}
 
 	return {
@@ -135,5 +163,5 @@ const PitchBoard = (() => {
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
-	PitchBoard.init();
+	EasyPitch.init();
 });
