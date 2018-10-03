@@ -1,6 +1,54 @@
 <html>
 	<head>
+		<title>EasyPitch.js Demo</title>
 		<script src="easypitch.js"></script>
+		<script type="text/javascript">
+			const Instrument = EasyPitch.Instrument,
+				SimpleInstrument = EasyPitch.SimpleInstrument,
+				Note = EasyPitch.Note;
+			let inst = new SimpleInstrument([1, 0, 0, 1/4]);
+			inst.playNotes([
+				new Note("A", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("A", -10, 1/2),
+				new Note("A", -10, 1/4),
+				new Note("E", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("D", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("Db", 4, 1),
+				new Note("A", -10, 1/2),
+				new Note("Db", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("D", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("E", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("F#", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("Ab", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("E", 4, 1),
+				new Note("A", -10, 1/4),
+				new Note("F#", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("E", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("D", 4, 1/4),
+				new Note("A", -10, 1/4),
+				new Note("Db", 4, 1/4),
+				new Note("A", -10, 1/2),
+				new Note("Db", 4, 1/4),
+				new Note("A", -10, 1/2),
+				new Note("B", 3, 1/4),
+				new Note("A", -10, 1/2),
+				new Note("Db", 4, 1/4),
+				new Note("A", -10, 1/2),
+				new Note("D", 4, 1),
+			],
+			200, () => { console.log("Done"); });
+		</script>
 	</head>
 	<body>
 	</body>

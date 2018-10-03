@@ -1,14 +1,21 @@
+/*
+	A library for easily playing notes in browser
+*/
 const EasyPitch = (() => {
 
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
+	/* The audio context used by this library */
 	let context = new AudioContext();
 
+	/*
+		The LogNormal distribution function. Used for attack and decay.
+	*/
 	function lognormal(x) {
 		return 1/Math.sqrt(2*Math.PI) * Math.pow(Math.E, -1/2*Math.pow(Math.log(x), 2));
 	}
 	
 	/*
-		Octave 8
+		The frequencies of notes in octave 8 by name
 	*/
 	const noteFreqs = {
 		"C": 4186.01,
@@ -140,9 +147,21 @@ const EasyPitch = (() => {
 		}
 	}
 
+	/*
+		An instrument that is based on overtone-series.
+		All is needed is the weightings of the overtones, no waveform function needed
+	*/
 	class SimpleInstrument extends Instrument {
+
+		/*
+			Creates an instrument with the given overtones
+			@param overtones - number[] - the weightings of each overtone starting at
+				the fundamental frequency and increasing to 2*fundamental, 3*fundamental,
+				4*fundamental, etc.
+		*/
 		constructor(overtones) {
 			let overtoneSum = overtones.reduce((a, b) => a+b);
+
 			super((t, freq) => {
 				let sample = 0;
 				for (let i = 0; i < overtones.length; i++) {
@@ -163,56 +182,3 @@ const EasyPitch = (() => {
 	};
 
 })();
-	
-function play() {
-	const Instrument = EasyPitch.Instrument,
-		SimpleInstrument = EasyPitch.SimpleInstrument,
-		Note = EasyPitch.Note;
-	let inst = new SimpleInstrument([1, 0, 0, 1/4]);
-	inst.playNotes([
-		new Note("A", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("A", -10, 1/2),
-		new Note("A", -10, 1/4),
-		new Note("E", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("D", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("Db", 4, 1),
-		new Note("A", -10, 1/2),
-		new Note("Db", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("D", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("E", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("F#", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("Ab", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("E", 4, 1),
-		new Note("A", -10, 1/4),
-		new Note("F#", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("E", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("D", 4, 1/4),
-		new Note("A", -10, 1/4),
-		new Note("Db", 4, 1/4),
-		new Note("A", -10, 1/2),
-		new Note("Db", 4, 1/4),
-		new Note("A", -10, 1/2),
-		new Note("B", 3, 1/4),
-		new Note("A", -10, 1/2),
-		new Note("Db", 4, 1/4),
-		new Note("A", -10, 1/2),
-		new Note("D", 4, 1),
-	],
-	200, () => { console.log("Done"); });
-}
-
-
-document.addEventListener("DOMContentLoaded", () => {
-	play();
-});
