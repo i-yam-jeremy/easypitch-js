@@ -8,13 +8,6 @@ const EasyPitch = (() => {
 	let context = new AudioContext();
 
 	/*
-		The LogNormal distribution function. Used for attack and decay.
-	*/
-	function lognormal(x) {
-		return 1/Math.sqrt(2*Math.PI) * Math.pow(Math.E, -1/2*Math.pow(Math.log(x), 2));
-	}
-	
-	/*
 		The frequencies of notes in octave 8 by name
 	*/
 	const noteFreqs = {
@@ -94,16 +87,18 @@ const EasyPitch = (() => {
 
 		/*
 			Fields:
-				waveformFunc - (number, number) => number - the function that defines the waveform
+				waveformFunc - (number, number, number) => number - the function that defines the waveform
 					with the signature (t, freq) => number where t is the current time in seconds
 					and freq is the frequency of the note to be played and the output is the position of the wave
+					and tmax is the maximum value of t (the note length in seconds)
 		*/
 
 		/*
 			Creates an instrument from the given waveform function
 			@param waveformFunc - (number, number) => number - the function that defines the waveform
-				with the signature (t, freq) => number where t is the current time in seconds
+				with the signature (t, freq, tmax) => number where t is the current time in seconds
 				and freq is the frequency of the note to be played and the output is the position of the wave
+				and tmax is the maximum value of t (the note length in seconds)
 		*/
 		constructor(waveformFunc) {
 			this.waveformFunc = waveformFunc;
@@ -120,7 +115,7 @@ const EasyPitch = (() => {
 			for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
 				var channelBuffer = buffer.getChannelData(channel);
 				for (let i = 0; i < channelBuffer.length; i++) {
-					channelBuffer[i] = this.waveformFunc(i/context.sampleRate, freq);
+					channelBuffer[i] = this.waveformFunc(i/context.sampleRate, freq, time);
 				}
 			}
 			source.buffer = buffer;                    // tell the source which sound to play
@@ -169,6 +164,29 @@ const EasyPitch = (() => {
 	}
 
 	/*
+		Returns the amplitude scale for linear attack and decay.
+		Increase in volume up until attackPoint and then stays at max volume until
+			decay point where it starts decreasing until x=1.0 where the volume
+			will be zero
+		@param x - number - the progress of the note being played (in the interval [0, 1])
+		@param attackPoint - number - the value of x at which to reach max volume
+		@param decayPoint - number - the value of x at which to start decaying
+		@return number - the volume at the point x based on the attack and decay function 
+	*/
+	function attackAndDecay(x, attackPoint, decayPoint) {
+		if (x < attackPoint) {
+			return (1/attackPoint) * x;
+		}
+		else if (x < decayPoint) {
+			return 1.0;
+		}
+		else {
+			let slope = -1.0/(1.0 - decayPoint);
+			return slope*(x - decayPoint) + 1.0;
+		}
+	}
+
+	/*
 		An instrument that is based on overtone-series.
 		All is needed is the weightings of the overtones, no waveform function needed
 	*/
@@ -183,12 +201,12 @@ const EasyPitch = (() => {
 		constructor(overtones) {
 			let overtoneSum = overtones.reduce((a, b) => a+b);
 
-			super((t, freq) => {
+			super((t, freq, tmax) => {
 				let sample = 0;
 				for (let i = 0; i < overtones.length; i++) {
 					let overtoneFreq = freq*(i+1);
 					let wave = Math.sin(2*Math.PI*overtoneFreq*t);
-					let amplitude = overtones[i] * lognormal(50*t);
+					let amplitude = overtones[i] * attackAndDecay(t/tmax, 0.1, 0.5);
 					sample += amplitude*wave;
 				}
 				return sample / overtoneSum;
