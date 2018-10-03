@@ -38,6 +38,21 @@ const EasyPitch = (() => {
 	};
 
 	/*
+		A rest. Time where no note is played.
+	*/
+	class Rest {
+		
+		/*
+			Creates a rest of the given length
+			@param length - number - 1 for whole note, 1/2 for half-note, 1/4 for quarter-note, etc.
+		*/
+		constructor(length) {
+			this.length = length;
+		}
+
+	}
+
+	/*
 		A note with a name, octave, and length (whole note, half-note, quarter-note, etc.)
 	*/	
 	class Note {
@@ -115,14 +130,20 @@ const EasyPitch = (() => {
 
 		/*
 			Plays the given note at the specified bpm and calls the callback when finished
-			@param note - Note - the note to play
+			@param note - Note|Rest - the note to play
 			@param bpm - number - the beats per minute
 			@param callback - () => void - called when the note is done playing
 		*/
 		playNote(note, bpm, callback) {
-			let secondsPerWholeNote = 60 / bpm;
-			let seconds = secondsPerWholeNote * note.length;
-			this._playFreq(note.getFreq(), seconds);
+			let secondsPerWholeNote = 60/bpm;
+			let seconds;
+			if (note instanceof Note) {
+				seconds = secondsPerWholeNote * note.length;
+				this._playFreq(note.getFreq(), seconds);
+			}
+			else if (note instanceof Rest) {
+				seconds = secondsPerWholeNote * note.length;
+			}
 			setTimeout(callback, 1000*seconds);
 		}
 
@@ -178,7 +199,8 @@ const EasyPitch = (() => {
 	return {
 		Instrument,
 		SimpleInstrument,
-		Note
+		Note,
+		Rest
 	};
 
 })();
