@@ -193,19 +193,36 @@ const EasyPitch = (() => {
 	class SimpleInstrument extends Instrument {
 
 		/*
+			Commonly-used wave functions
+			Signature: (number) => number
+			The wave function takes a time t in seconds, and produces the output waveform
+				with a value in the interval [-1.0, 1.0]
+		*/
+		static get WAVES() {
+			return {
+				SQUARE: (t) => (t%1) < 0.5 ? 1.0 : -1.0,
+				TRIANGLE: (t) => 2.0*(t % 1.0) - 1.0,
+				SINE: (t) => Math.sin(2*Math.PI*t)
+			};
+		}
+
+		/*
 			Creates an instrument with the given overtones
 			@param overtones - number[] - the weightings of each overtone starting at
 				the fundamental frequency and increasing to 2*fundamental, 3*fundamental,
 				4*fundamental, etc.
+			@param waveFunc - (number) => number - the function for the wave (amplitude in [-1.0, 1.0] and wave must have one cycle per second)
+				default is a sine wave
 		*/
-		constructor(overtones) {
+		constructor(overtones, waveFunc) {
+			waveFunc = waveFunc || SimpleInstrument.WAVES.SINE;
 			let overtoneSum = overtones.reduce((a, b) => a+b);
 
 			super((t, freq, tmax) => {
 				let sample = 0;
 				for (let i = 0; i < overtones.length; i++) {
 					let overtoneFreq = freq*(i+1);
-					let wave = Math.sin(2*Math.PI*overtoneFreq*t);
+					let wave = waveFunc(overtoneFreq*t);
 					let amplitude = overtones[i] * attackAndDecay(t/tmax, 0.1, 0.5);
 					sample += amplitude*wave;
 				}
