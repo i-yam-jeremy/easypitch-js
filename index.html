@@ -14,14 +14,15 @@
 
 		<script id="code-example-template" type="text/x-handlebars-template">
 			<div class="row">
-				<div class="col-md-4"></div>
-				<div class="col-md-4">
+				<div class="col-md-2"></div>
+				<div class="col-md-8">
+					<h3 style="display: inline-block;">{{title}}</h3>
+					<input id="code-example-button-{{name}}" style="display: inline-block; margin: 0.3rem" type="button" class="btn btn-primary" value="&#x25b6;"/>
 					<pre class="prettyprint">
 {{code}}
 					</pre>
-					<input id="code-example-button-{{name}}" type="button" class="btn btn-primary" value="&#x25b6;"/>
 				</div>
-				<div class="col-md-4"></div>
+				<div class="col-md-2"></div>
 			</div>
 		</script>
 
@@ -33,14 +34,15 @@
 				Rest = EasyPitch.Rest;
 
 			const CODE_EXAMPLES = [
-				{name: "sine-wave", run: () => {	
-					let inst = new SimpleInstrument([1, 0, 0, 1/4], SimpleInstrument.WAVES.SQUARE);
+				{name: "sine-wave", title: "Sine Wave", run: () => {	
+					let inst = new SimpleInstrument([1], SimpleInstrument.WAVES.SINE);
 					inst.playNotes([
-						new Note("A", 4, 1/4),
+						new Note("A", 4, 1/2),
 						new Rest(1/4),
-						new Note("A", 4, 1/4)
-					], 200, () => {});
-				}}
+						new Note("A", 5, 1/2)
+					], 60, () => {});
+				}},
+				
 			];
 
 			function removeClosureWrapping(s) {
@@ -64,9 +66,8 @@
 				let codeExampleTemplate = Handlebars.compile(templateSource);
 				let examplesDiv = $("#examples");
 				for (let example of CODE_EXAMPLES) {
-					let code = correctIndentation(removeClosureWrapping(example.run.toString()));
-					let exampleObj = {name: example.name, code: code};
-					examplesDiv.append(codeExampleTemplate(exampleObj));
+					example.code = correctIndentation(removeClosureWrapping(example.run.toString()));
+					examplesDiv.append(codeExampleTemplate(example));
 					$("#code-example-button-" + example.name).click(example.run);
 				}
 				PR.prettyPrint();
