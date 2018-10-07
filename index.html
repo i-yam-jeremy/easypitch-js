@@ -6,6 +6,24 @@
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js?lang=js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.12/handlebars.min.js"></script>
+
+		<script id="code-example-template" type="text/x-handlebars-template">
+			<div class="row">
+				<div class="col-md-4"></div>
+				<div class="col-md-4">
+					<pre class="prettyprint">
+{{code}}
+					</pre>
+					<input id="code-example-button-{{name}}" type="button" class="btn btn-primary" value="&#x25b6;"/>
+				</div>
+				<div class="col-md-4"></div>
+			</div>
+		</script>
 
 		<script src="easypitch.js"></script>
 		<script type="text/javascript">
@@ -13,6 +31,46 @@
 				SimpleInstrument = EasyPitch.SimpleInstrument,
 				Note = EasyPitch.Note,
 				Rest = EasyPitch.Rest;
+
+			const CODE_EXAMPLES = [
+				{name: "sine-wave", run: () => {	
+					let inst = new SimpleInstrument([1, 0, 0, 1/4], SimpleInstrument.WAVES.SQUARE);
+					inst.playNotes([
+						new Note("A", 4, 1/4),
+						new Rest(1/4),
+						new Note("A", 4, 1/4)
+					]);
+				}}
+			];
+
+			function removeClosureWrapping(s) {
+				let newLineIndex = s.indexOf("\n") + 1;
+				s = s.substring(newLineIndex, s.length-1); // cutoff the end '}'
+				return s;
+			}
+
+			function correctIndentation(s) {
+				let lines = s.split("\n");
+				let index = 0;
+				while (lines[0][index] == "\t") {
+					index++;
+				}
+				lines = lines.map(line => line.substring(index));
+				return lines.join("\n");
+			}
+
+			$(document).ready(() => {
+				let templateSource = $("#code-example-template").html();
+				let codeExampleTemplate = Handlebars.compile(templateSource);
+				let examplesDiv = $("#examples");
+				for (let example of CODE_EXAMPLES) {
+					let code = correctIndentation(removeClosureWrapping(example.run.toString()));
+					let exampleObj = {name: example.name, code: code};
+					examplesDiv.append(codeExampleTemplate(exampleObj));
+					$("#code-example-button-" + example.name).click(example.run);
+				}
+				PR.prettyPrint();
+			});
 
 			function play() {
 				let inst = new SimpleInstrument([1, 0, 0, 1/4], SimpleInstrument.WAVES.SQUARE);
@@ -61,6 +119,7 @@
 		</script>
 	</head>
 	<body>
-		<input type="button" class="btn btn-primary" value="&#x25b6;" onclick="play()"/>
+		<div id="examples">
+		</div>
 	</body>
 </html>
