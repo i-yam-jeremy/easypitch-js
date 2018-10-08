@@ -83,7 +83,7 @@ const EasyPitch = (() => {
 		An instrument. Determines how a note will sound based on
 			the given waveform function
 	*/
-	class Instrument {
+	class RawInstrument {
 
 		/*
 			Fields:
@@ -187,10 +187,9 @@ const EasyPitch = (() => {
 	}
 
 	/*
-		An instrument that is based on overtone-series.
-		All is needed is the weightings of the overtones, no waveform function needed
+		An instrument that is based on a base waveform and overtone series.
 	*/
-	class SimpleInstrument extends Instrument {
+	class Instrument extends RawInstrument {
 
 		/*
 			Commonly-used wave functions
@@ -233,7 +232,6 @@ const EasyPitch = (() => {
 
 	return {
 		Instrument,
-		SimpleInstrument,
 		Note,
 		Rest
 	};

@@ -17,7 +17,8 @@
 				<div class="col-md-2"></div>
 				<div class="col-md-8">
 					<h3 style="display: inline-block;">{{title}}</h3>
-					<input id="code-example-button-{{name}}" style="display: inline-block; margin: 0.3rem" type="button" class="btn btn-primary" value="&#x25b6;"/>
+					{{#if playable}}<input id="code-example-button-{{name}}" style="display: inline-block; margin: 0.3rem" type="button" class="btn btn-primary" value="&#x25b6;"/>{{/if}}
+					<p><h6>{{desc}}<h6></p>
 					<pre class="prettyprint">
 {{code}}
 					</pre>
@@ -29,19 +30,171 @@
 		<script src="easypitch.js"></script>
 		<script type="text/javascript">
 			const Instrument = EasyPitch.Instrument,
-				SimpleInstrument = EasyPitch.SimpleInstrument,
 				Note = EasyPitch.Note,
 				Rest = EasyPitch.Rest;
 
 			const CODE_EXAMPLES = [
-				{name: "sine-wave", title: "Sine Wave", run: () => {	
-					let inst = new SimpleInstrument([1], SimpleInstrument.WAVES.SINE);
-					inst.playNotes([
-						new Note("A", 4, 1/2),
-						new Rest(1/4),
-						new Note("A", 5, 1/2)
-					], 60, () => {});
-				}},
+				{
+					name: "useful-rename",
+					title: "Useful Renaming",
+					desc: "It's useful to bring the classes into local scope",
+					playable: false,
+					run: () => {
+						const Instrument = EasyPitch.Instrument,
+							Note = EasyPitch.Note,
+							Rest = EasyPitch.Rest;
+					}
+				},
+				{
+					name: "instruments",
+					title: "Instruments",
+					desc: "Instruments are used to play notes",
+					playable: false,
+					run: () => {
+						// inst1 is a pure sine wave
+						let inst1 = new Instrument(
+							[1],
+							Instrument.WAVES.SINE);
+
+						// inst2 is a sine wave with overtones with the specified weightings
+						let inst2 = new Instrument(
+							[1, 1/2, 1/3, 1/4],
+							Instrument.WAVES.SINE);
+	
+						// inst3 is a triangle wave with overtones with the specified weightings
+						let inst3 = new Instrument(
+							[1, 0, 0, 1/2],
+							Instrument.WAVES.TRIANGLE);
+					}
+				},
+				{
+					name: "notes-rests",
+					title: "Notes & Rests",
+					desc: "Notes have a name (A, A#, Bb, B, etc.), an octave, and a length (whole note, quarter note, etc.)",
+					playable: false,
+					run: () => {
+						let note1 = new Note("A", 4, 1/4);
+						let rest1 = new Rest(1/4);
+						let note2 = new Note("Eb", 3, 1);
+					}
+				},
+				{
+					name: "playing-notes",
+					title: "Playing Notes",
+					desc: "Use an instrument to play notes",
+					playable: true,
+					run: () => {
+						// a pure sine wave instrument
+						let inst1 = new Instrument(
+							[1],
+							Instrument.WAVES.SINE);
+						// the tempo (beats per minute)
+						let bpm = 60;
+						// our callback function
+						let callback = () => { console.log("Done"); }
+
+						// play the notes
+						inst1.playNotes([
+							new Note("A", 4, 1/2),
+							new Rest(1/4),
+							new Note("A", 5, 1/2)
+						], bpm, callback);
+					}
+				},
+				{
+					name: "multiple-instruments",
+					title: "Playing Multiple Instruments",
+					desc: "Multiple instruments can be played simultaneously or consecutively",
+					playable: true,
+					run: () => {
+						// a pure sine wave instrument
+						let inst1 = new Instrument(
+							[1],
+							Instrument.WAVES.SINE);
+					
+						// a triangle wave instrument
+						let inst2 = new Instrument(
+							[1],
+							Instrument.WAVES.TRIANGLE);
+
+						// plays multiple notes at the same time	
+						function playChords() {
+							inst2.playNotes([
+								new Note("C", 4, 1/4),
+								new Note("C#", 4, 1/4),
+								new Note("D", 4, 1/4)
+							], 60, () => {});
+							inst2.playNotes([
+								new Note("E", 4, 1/4),
+								new Note("F", 4, 1/4),
+								new Note("F#", 4, 1/4)
+							], 60, () => {});
+							inst2.playNotes([
+								new Note("G", 4, 1/4),
+								new Note("G#", 4, 1/4),
+								new Note("A", 4, 1/4)
+							], 60, () => {});
+						}
+
+						inst1.playNotes([
+							new Note("A", 4, 1/2),
+							new Rest(1/4),
+							new Note("A", 5, 1/2)
+						], 60, playChords);
+					}
+				},
+				{
+					name: "song-example",
+					title: "Song Example",
+					desc: "Here is the intro to Sea Shanty 2",
+					playable: true,
+					run: () => {
+						let inst = new Instrument(
+							[1, 0, 0, 1/4],
+							Instrument.WAVES.TRIANGLE);
+						inst.playNotes([
+							new Note("A", 4, 1/4),
+							new Rest(1/4),
+							new Rest(1/2),
+							new Rest(1/4),
+							new Note("E", 4, 1/4),
+							new Rest(1/4),
+							new Note("D", 4, 1/4),
+							new Rest(1/4),
+							new Note("Db", 4, 1),
+							new Rest(1/2),
+							new Note("Db", 4, 1/4),
+							new Rest(1/4),
+							new Note("D", 4, 1/4),
+							new Rest(1/4),
+							new Note("E", 4, 1/4),
+							new Rest(1/4),
+							new Note("F#", 4, 1/4),
+							new Rest(1/4),
+							new Note("Ab", 4, 1/4),
+							new Rest(1/4),
+							new Note("E", 4, 1),
+							new Rest(1/4),
+							new Note("F#", 4, 1/4),
+							new Rest(1/4),
+							new Rest(1/4),
+							new Note("E", 4, 1/4),
+							new Rest(1/4),
+							new Note("D", 4, 1/4),
+							new Rest(1/4),
+							new Note("Db", 4, 1/4),
+							new Rest(1/2),
+							new Note("Db", 4, 1/4),
+							new Rest(1/2),
+							new Note("B", 3, 1/4),
+							new Rest(1/2),
+							new Note("Db", 4, 1/4),
+							new Rest(1/2),
+							new Note("D", 4, 1),
+						],
+						200, () => { console.log("Done"); });
+					}
+				},
 				
 			];
 
@@ -72,55 +225,17 @@
 				}
 				PR.prettyPrint();
 			});
-
-			function play() {
-				let inst = new SimpleInstrument([1, 0, 0, 1/4], SimpleInstrument.WAVES.SQUARE);
-				inst.playNotes([
-					new Note("A", 4, 1/4),
-					new Rest(1/4),
-					new Rest(1/2),
-					new Rest(1/4),
-					new Note("E", 4, 1/4),
-					new Rest(1/4),
-					new Note("D", 4, 1/4),
-					new Rest(1/4),
-					new Note("Db", 4, 1),
-					new Rest(1/2),
-					new Note("Db", 4, 1/4),
-					new Rest(1/4),
-					new Note("D", 4, 1/4),
-					new Rest(1/4),
-					new Note("E", 4, 1/4),
-					new Rest(1/4),
-					new Note("F#", 4, 1/4),
-					new Rest(1/4),
-					new Note("Ab", 4, 1/4),
-					new Rest(1/4),
-					new Note("E", 4, 1),
-					new Rest(1/4),
-					new Note("F#", 4, 1/4),
-					new Rest(1/4),
-					new Rest(1/4),
-					new Note("E", 4, 1/4),
-					new Rest(1/4),
-					new Note("D", 4, 1/4),
-					new Rest(1/4),
-					new Note("Db", 4, 1/4),
-					new Rest(1/2),
-					new Note("Db", 4, 1/4),
-					new Rest(1/2),
-					new Note("B", 3, 1/4),
-					new Rest(1/2),
-					new Note("Db", 4, 1/4),
-					new Rest(1/2),
-					new Note("D", 4, 1),
-				],
-				200, () => { console.log("Done"); });
-			}
 		</script>
 	</head>
 	<body>
-		<div id="examples">
+		<div class="container">
+			<div class="jumbotron text-center">
+				<p><h1>EasyPitch.js</h1></p>
+				<p>A library for easily playing musical notes</p>
+				<p><a href="https://github.com/i-yam-jeremy/easypitch-js" target="_blank">View On GitHub</a></p>
+			</div>
+			<div id="examples">
+			</div>
 		</div>
 	</body>
 </html>
